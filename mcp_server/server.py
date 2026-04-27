@@ -250,7 +250,63 @@ def tools_status() -> Dict[str, Any]:
         },
     }
 
+
+# ===== auto-cleanup tools (added v0.2.0) ======================================
+from autotrigger import cleanup as _cleanup
 
+
+@mcp.tool
+def cleanup_session(workspace: str, archive: bool = True, dry_run: bool = False,
+                     close_windows: bool = True, screenshots_min_age: int = 15) -> Dict[str, Any]:
+    """Post-session/milestone cleanup: archive diagnostic files, delete old screenshots,
+    close stale windows. Defaults are safe (archive not delete, skip git-tracked,
+    never closes shells or Cowork)."""
+    out = _cleanup.run_full_cleanup(
+        workspace,
+        archive_files=archive,
+        close_windows=close_windows,
+        cleanup_screenshots_min_age=screenshots_min_age,
+        dry_run=dry_run,
+    )
+    return {step: {
+        "archived": r.archived,
+        "deleted": r.deleted,
+        "closed_windows": r.closed_windows,
+        "errors": r.errors,
+        "archive_dir": r.archive_dir,
+        "summary": r.summary(),
+    } for step, r in out.items()}
+
+
+@mcp.tool
+def archive_files(workspace: str, dry_run: bool = False) -> Dict[str, Any]:
+    """Move session diagnostic files (PS1/bat/log etc) to session-archive/<date>/.
+    Skips git-tracked files."""
+    r = _cleanup.cleanup_files(workspace, archive=True, dry_run=dry_run)
+    return {
+        "archived": r.archived,
+        "errors": r.errors,
+        "archive_dir": r.archive_dir,
+        "summary": r.summary(),
+    }
+
+
+@mcp.tool
+def close_stale_windows(target_processes: Optional[List[str]] = None,
+                         dry_run: bool = False) -> Dict[str, Any]:
+    """Close stale UI windows (default: notepad, notepad++).
+    Never closes shells (cmd/powershell/pwsh) or Cowork (msedgewebview2)."""
+    r = _cleanup.close_stale_windows(
+        target_processes=target_processes or _cleanup.DEFAULT_STALE_PROCESSES,
+        dry_run=dry_run,
+    )
+    return {
+        "closed_windows": r.closed_windows,
+        "errors": r.errors,
+        "summary": r.summary(),
+    }
+# ===== end auto-cleanup tools =================================================
 if __name__ == "__main__":
     mcp.run()
+
 

@@ -1,8 +1,9 @@
-﻿"""mcp-graphify-autotrigger - auto-trigger graphify queries + delegate shell."""
+﻿"""mcp-graphify-autotrigger - auto-trigger graphify queries + delegate shell + auto-cleanup."""
 from . import classifier
 from . import graphify
 from . import preflight
 from . import delegate
+from . import cleanup
 
-__version__ = "0.1.0"
-__all__ = ["classifier", "graphify", "preflight", "delegate", "__version__"]
+__version__ = "0.2.0"
+__all__ = ["classifier", "graphify", "preflight", "delegate", "cleanup", "__version__"]

@@ -152,3 +152,4 @@ If this saves you tokens or unblocks your agent, consider buying me a coffee:
 </p>
 
 Issues and PRs welcome at [GitHub](https://github.com/ChharithOeun/mcp-graphify-autotrigger/issues).
+
