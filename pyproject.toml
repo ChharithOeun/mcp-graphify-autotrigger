@@ -1,10 +1,10 @@
-﻿[build-system]
+[build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "mcp-graphify-autotrigger"
-version = "0.2.1"
+version = "0.3.0"
 description = "Auto-trigger graphify knowledge-graph queries on every LLM prompt + MCP shell delegation for Claude Code / Cowork agents."
 readme = "README.md"
 license = { text = "MIT" }

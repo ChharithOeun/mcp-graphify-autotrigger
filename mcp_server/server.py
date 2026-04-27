@@ -55,8 +55,14 @@ from autotrigger import graphify as _gt
 from autotrigger import classifier as _gc
 from autotrigger import preflight as _gp
 
+# Agent-tool parity (Read/Write/Edit/Glob/Grep/Bash/skill_dispatch/list_skills)
+# so that Cowork / Claude Code can delegate any of their native tool calls to
+# this MCP without losing capability.
+from . import agent_tools as _agent_tools
+
 
 mcp = FastMCP("chharbot_tools")
+_agent_tools.register(mcp)
 
 
 @mcp.tool
@@ -250,7 +256,7 @@ def tools_status() -> Dict[str, Any]:
         },
     }
 
-
+
 # ===== auto-cleanup tools (added v0.2.0) ======================================
 from autotrigger import cleanup as _cleanup
 

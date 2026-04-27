@@ -74,7 +74,22 @@ claude mcp add chharbot_tools -- python -m mcp_server.server
 # 5. Restart your assistant
 ```
 
-After registering and restarting, the new tools (`delegate_shell`, `graphify_query`, `graphify_build`, `graphify_preflight`, `graphify_classify`, `graphify_path`, `tools_status`) appear in the assistant's tool list.
+After registering and restarting, the new tools appear in the assistant's tool list:
+
+- **chharbot toolkit (original 7)**: `delegate_shell`, `graphify_query`, `graphify_build`, `graphify_preflight`, `graphify_classify`, `graphify_path`, `tools_status`, plus the cleanup tool `cleanup_session`.
+- **Agent-tool parity (v0.3.0+, new 8)**: `read_file`, `write_file`, `edit_file`, `glob_files`, `grep_files`, `bash`, `skill_dispatch(name)`, `list_skills` — same primitives Cowork-Claude / Claude Code use natively, so any tool call from either side has a 1:1 chharbot equivalent.
+
+This means delegating a task from Cowork to chharbot (or back) doesn't lose capability: every Read / Write / Edit / Glob / Grep / Bash call your agent makes has a chharbot MCP version with audit logging and size caps.
+
+### Slash commands in Cowork & Claude Code
+
+The repo ships two delivery paths so `/graphify` and `/autotrigger` work natively:
+
+**Cowork** — install the [`chharbot-tools` plugin](./plugins/chharbot-tools.plugin) (a `.plugin` zip that bundles the skills + MCP config). Open Cowork, drag the file in, click Add. Restart. Done.
+
+**Claude Code** — double-click `skills/installers/install-cowork-skills.bat`, which also drops the skill folders into `%USERPROFILE%\.claude\skills\`.
+
+See [`skills/README.md`](./skills/README.md) and [`plugins/README.md`](./plugins/README.md) for layout and manual-install instructions.
 
 ## Features
 
