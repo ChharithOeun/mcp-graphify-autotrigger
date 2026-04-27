@@ -200,45 +200,49 @@ def close_stale_windows(
     target_processes: Sequence[str] = DEFAULT_STALE_PROCESSES,
     *,
     dry_run: bool = False,
+    aggressive: bool = False,
     protect_pids: Sequence[int] = (),
 ) -> CleanupResult:
-    """Force-close stale UI windows. Windows-only. Never closes shells or Cowork."""
+    """Force-close stale UI windows. Windows-only.
+    
+    Default targets: notepad, notepad++ (safe).
+    aggressive=True ALSO closes: cmd, conhost, OpenConsole, WindowsTerminal
+        (use AFTER session - this WILL close your active shells).
+    NEVER closes: msedgewebview2 (Cowork), claude, python, explorer.
+    """
     res = CleanupResult(dry_run=dry_run)
     if sys.platform != "win32":
         res.errors.append("close_stale_windows is Windows-only")
         return res
 
-    NEVER = {"cmd", "powershell", "pwsh", "msedgewebview2", "claude",
-             "python", "pythonw", "code", "explorer", "winlogon"}
-    safe_targets = [t for t in target_processes if t.lower() not in NEVER]
-    if not safe_targets:
+    NEVER = {"msedgewebview2", "claude", "python", "pythonw",
+             "explorer", "winlogon", "dwm", "csrss", "services", "system"}
+    targets = list(target_processes)
+    if aggressive:
+        targets += ["cmd", "conhost", "OpenConsole", "WindowsTerminal"]
+    targets = [t for t in targets if t.lower() not in NEVER]
+    if not targets:
         return res
-
-    names_re = "|".join(safe_targets)
-    protect = ",".join(map(str, protect_pids)) or "0"
-    ps_cmd = (
-        f"Get-Process | Where-Object {{ "
-        f"$_.ProcessName -match '^({names_re})$' "
-        f"-and $_.Id -notin @({protect}) "
-        f"}} | ForEach-Object {{ "
-        f"Write-Output ($_.Id); "
-        f"{'' if dry_run else 'Stop-Process -Id $_.Id -Force'} "
-        f"}}"
-    )
-    try:
-        proc = subprocess.run(
-            ["powershell", "-NoProfile", "-Command", ps_cmd],
-            capture_output=True, text=True, timeout=30,
-        )
-        for line in proc.stdout.splitlines():
-            line = line.strip()
-            if line.isdigit():
-                res.closed_windows.append(f"pid={line}")
-        if proc.stderr:
-            res.errors.append(proc.stderr.strip()[:500])
-    except (subprocess.SubprocessError, OSError) as e:
-        res.errors.append(f"window enumeration failed: {e}")
+    if dry_run:
+        for t in targets:
+            res.closed_windows.append(f"would-kill:{t}")
+        return res
+    
+    # taskkill handles UWP / packaged apps where Stop-Process by name fails
+    for t in targets:
+        try:
+            proc = subprocess.run(
+                ["taskkill", "/F", "/IM", f"{t}.exe"],
+                capture_output=True, text=True, timeout=15,
+            )
+            if proc.returncode == 0 or "SUCCESS" in (proc.stdout or ""):
+                res.closed_windows.append(t)
+            elif "not found" not in (proc.stderr or "").lower():
+                res.errors.append(f"{t}: rc={proc.returncode}")
+        except (subprocess.SubprocessError, OSError) as e:
+            res.errors.append(f"{t}: {e}")
     return res
+
 
 
 def run_full_cleanup(
@@ -318,3 +322,4 @@ def _main():
 
 if __name__ == "__main__":
     _main()
+

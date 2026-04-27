@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcp-graphify-autotrigger"
-version = "0.2.0"
+version = "0.2.1"
 description = "Auto-trigger graphify knowledge-graph queries on every LLM prompt + MCP shell delegation for Claude Code / Cowork agents."
 readme = "README.md"
 license = { text = "MIT" }
@@ -37,4 +37,5 @@ BuyMeACoffee = "https://buymeacoffee.com/chharith"
 
 [tool.hatch.build.targets.wheel]
 packages = ["autotrigger", "mcp_server"]
+
 
