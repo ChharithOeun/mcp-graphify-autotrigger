@@ -1,4 +1,4 @@
-"""
+﻿"""
 chharbot/tools/graphify_classifier.py
 
 Auto-trigger classifier for graphify. Decides whether a given prompt should
@@ -64,7 +64,7 @@ STRUCTURAL_PATTERNS: List[Tuple[str, float, str]] = [
      0.85, "cross_cutting"),
 ]
 
-# Patterns that point to a SPECIFIC file/line — direct read beats graphify.
+# Patterns that point to a SPECIFIC file/line â€” direct read beats graphify.
 TARGETED_PATTERNS: List[Tuple[str, float, str]] = [
     (r"\bline\s*\d+\b", 0.90, "line_reference"),
     (r"\b[\w/\\.-]+\.(py|lua|js|ts|tsx|jsx|cpp|c|h|hpp|md|json|toml|ya?ml|sh|ps1|bat|sql|rb|go|rs)\b",
@@ -72,7 +72,7 @@ TARGETED_PATTERNS: List[Tuple[str, float, str]] = [
     (r"\b(traceback|exception|stack\s*trace)\b", 0.70, "error_context"),
 ]
 
-# Conversational / non-code chatter — skip graphify entirely.
+# Conversational / non-code chatter â€” skip graphify entirely.
 CONVERSATIONAL_PATTERNS: List[Tuple[str, float, str]] = [
     (r"^(hi|hello|hey|thanks?|cheers|gn|gm|wb|yo|sup|ping|status\??)\b",
      0.95, "greeting"),
@@ -85,6 +85,7 @@ COST_GRAPH_QUERY = 2_000   # graphify query result avg
 COST_FILE_READ = 5_000     # avg per-file context cost for a single read
 COST_GREP_SCAN = 8_000     # unfocused grep across many files
 COST_LLM_CLASSIFY = 500    # local Ollama vote
+PROMPT_CAP_CHARS = 32 * 1024  # 32K char max (ReDoS / OOM protection)
 
 
 def _extract_query(prompt: str) -> str:
@@ -115,13 +116,15 @@ def classify(prompt: str, has_graph: bool = True) -> ClassifierResult:
         has_graph: whether a built graph exists for the working repo
 
     Returns:
-        ClassifierResult — the decision plus diagnostics.
+        ClassifierResult â€” the decision plus diagnostics.
     """
+    if prompt and len(prompt) > PROMPT_CAP_CHARS:
+        prompt = prompt[:PROMPT_CAP_CHARS]
     if prompt is None:
         prompt = ""
     text = prompt.lower().strip()
 
-    # Empty / trivial — skip
+    # Empty / trivial â€” skip
     if len(text) < 3:
         return ClassifierResult(
             decision=Decision.SKIP_GRAPHIFY,
@@ -130,7 +133,7 @@ def classify(prompt: str, has_graph: bool = True) -> ClassifierResult:
             expected_token_cost=0,
         )
 
-    # No graph available — graphify can't help
+    # No graph available â€” graphify can't help
     if not has_graph:
         return ClassifierResult(
             decision=Decision.SKIP_GRAPHIFY,
@@ -180,7 +183,7 @@ def classify(prompt: str, has_graph: bool = True) -> ClassifierResult:
             debug={"structural_hits": [(s[1], s[0]) for s in structural_hits]},
         )
 
-    # No regex matched — punt to LLM
+    # No regex matched â€” punt to LLM
     return ClassifierResult(
         decision=Decision.LLM_CLASSIFY,
         confidence=0.5,
@@ -288,3 +291,4 @@ def _run_self_test() -> int:
 if __name__ == "__main__":
     import sys
     sys.exit(_run_self_test())
+

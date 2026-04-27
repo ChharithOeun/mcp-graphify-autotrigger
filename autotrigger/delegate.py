@@ -1,4 +1,4 @@
-"""
+﻿"""
 chharbot/tools/delegate.py
 
 Delegation tool: lets external agents (Claude in Cowork, MCP clients, etc.)
@@ -11,8 +11,8 @@ Every call is appended to ~/.chharbot/delegate-audit.log as JSON-lines so the
 operator can review what was delegated.
 
 Exposed via chharbot's MCP server as `delegate_shell`. From there, Claude in
-Cowork can call any shell command — `pip install`, `git`, `graphify`, native
-tools — without the tier=click typing restriction.
+Cowork can call any shell command â€” `pip install`, `git`, `graphify`, native
+tools â€” without the tier=click typing restriction.
 """
 from __future__ import annotations
 
@@ -43,8 +43,10 @@ class DelegateResult:
     truncated_stderr: bool = False
 
 
-# Safety caps (not security — just memory protection)
+# Safety caps (not security â€” just memory protection)
 STDOUT_CAP_BYTES = 256 * 1024   # 256KB
+STDERR_CAP_BYTES_REMOVED_DUMMY = 0
+STDIN_CAP_BYTES = 1024 * 1024  # 1MB max stdin (DoS protection)
 STDERR_CAP_BYTES = 64 * 1024    # 64KB
 
 
@@ -99,6 +101,8 @@ def delegate_shell(
         raise TypeError("argv must be List[str]")
     if not argv:
         raise ValueError("argv must not be empty")
+    if stdin is not None and len(stdin) > STDIN_CAP_BYTES:
+        raise ValueError(f"stdin exceeds STDIN_CAP_BYTES={STDIN_CAP_BYTES}")
     
     cwd = cwd or os.getcwd()
     if inherit_env:
@@ -302,3 +306,4 @@ def _self_test() -> int:
 if __name__ == "__main__":
     import sys
     sys.exit(_self_test())
+
