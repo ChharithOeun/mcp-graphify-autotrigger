@@ -1,0 +1,39 @@
+﻿[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-graphify-autotrigger"
+version = "0.1.0"
+description = "Auto-trigger graphify knowledge-graph queries on every LLM prompt + MCP shell delegation for Claude Code / Cowork agents."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Chharith Oeun" }]
+requires-python = ">=3.10"
+keywords = ["mcp", "graphify", "claude-code", "cowork", "agent-autonomy", "knowledge-graph", "ai-tools", "token-saving", "anthropic", "ollama", "fastmcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.optional-dependencies]
+mcp      = ["fastmcp>=3.0"]
+graphify = ["graphifyy>=0.4"]
+all      = ["fastmcp>=3.0", "graphifyy>=0.4"]
+dev      = ["pytest>=7.0"]
+
+[project.urls]
+Homepage     = "https://github.com/ChharithOeun/mcp-graphify-autotrigger"
+Repository   = "https://github.com/ChharithOeun/mcp-graphify-autotrigger"
+Issues       = "https://github.com/ChharithOeun/mcp-graphify-autotrigger/issues"
+BuyMeACoffee = "https://buymeacoffee.com/chharith"
+
+[tool.hatch.build.targets.wheel]
+packages = ["autotrigger", "mcp_server"]
